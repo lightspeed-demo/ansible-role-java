@@ -1,6 +1,6 @@
 ---
 - name: Ensure Java is installed.
-  pkgng:
+  community.general.pkgng:
     name: "{{ java_packages }}"
     state: present
 
