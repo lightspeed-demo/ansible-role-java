@@ -4,7 +4,7 @@
   when: ansible_distribution == 'FreeBSD' or ansible_distribution == 'Fedora'
 
 - name: Include version-specific variables for CentOS/RHEL.
-  include_vars: "RedHat-{{ ansible_distribution_version.split('.')[0] }}.yml"
+  include_vars: RedHat-{{ ansible_distribution_version.split('.')[0] }}.yml
   when: >-
     ansible_distribution in [
       'CentOS',
@@ -43,5 +43,5 @@
   template:
     src: java_home.sh.j2
     dest: /etc/profile.d/java_home.sh
-    mode: 0644
+    mode: "0644"
   when: java_home is defined and java_home
