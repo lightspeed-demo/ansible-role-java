@@ -1,10 +1,9 @@
 ---
 - name: Include OS-specific variables for Fedora or FreeBSD.
-  include_vars: "{{ ansible_distribution }}.yml"
   when: ansible_distribution == 'FreeBSD' or ansible_distribution == 'Fedora'
+  ansible.builtin.include_vars: "{{ ansible_distribution }}.yml"
 
 - name: Include version-specific variables for CentOS/RHEL.
-  include_vars: "RedHat-{{ ansible_distribution_version.split('.')[0] }}.yml"
   when: >-
     ansible_distribution in [
       'CentOS',
@@ -14,34 +13,37 @@
       'Rocky',
       'AlmaLinux'
     ]
+  ansible.builtin.include_vars: RedHat-{{ ansible_distribution_version.split('.')[0] }}.yml
 
 - name: Include version-specific variables for Ubuntu.
-  include_vars: "{{ ansible_distribution }}-{{ ansible_distribution_version.split('.')[0] }}.yml"
   when: ansible_distribution == 'Ubuntu'
+  ansible.builtin.include_vars: "{{ ansible_distribution }}-{{ ansible_distribution_version.split('.')[0] }}.yml"
 
 - name: Include version-specific variables for Debian.
-  include_vars: "{{ ansible_distribution | title }}-{{ ansible_distribution_version.split('.')[0] }}.yml"
   when: ansible_os_family == 'Debian'
+  ansible.builtin.include_vars: "{{ ansible_distribution | title }}-{{ ansible_distribution_version.split('.')[0] }}.yml"
 
 - name: Define java_packages.
-  set_fact:
-    java_packages: "{{ __java_packages | list }}"
   when: java_packages is not defined
 
-# Setup/install tasks.
-- include_tasks: setup-RedHat.yml
-  when: ansible_os_family == 'RedHat'
+  # Setup/install tasks.
+  ansible.builtin.set_fact:
+    java_packages: "{{ __java_packages | list }}"
 
-- include_tasks: setup-Debian.yml
-  when: ansible_os_family == 'Debian'
+- when: ansible_os_family == 'RedHat'
+  ansible.builtin.include_tasks: setup-RedHat.yml
 
-- include_tasks: setup-FreeBSD.yml
-  when: ansible_os_family == 'FreeBSD'
+- when: ansible_os_family == 'Debian'
+  ansible.builtin.include_tasks: setup-Debian.yml
 
-# Environment setup.
+- when: ansible_os_family == 'FreeBSD'
+
+  # Environment setup.
+  ansible.builtin.include_tasks: setup-FreeBSD.yml
+
 - name: Set JAVA_HOME if configured.
-  template:
+  when: java_home is defined and java_home
+  ansible.builtin.template:
     src: java_home.sh.j2
     dest: /etc/profile.d/java_home.sh
-    mode: 0644
-  when: java_home is defined and java_home
+    mode: 420
